@@ -1,4 +1,4 @@
-module.exports = (function(Model, options) {
+module.exports = function(Model, options) {
   'use strict';
 
   var mongoose = require('mongoose');
@@ -8,11 +8,10 @@ module.exports = (function(Model, options) {
   }
 
   return {
-    search: require('./search').call(Model, options),
-    create: require('./create').call(Model, options),
-    read: require('./read').call(Model, options),
-    update: require('./update').call(Model, options),
-    del: require('./delete').call(Model, options)
-  }
-
-})(Model, options);
+    search: require('./search')(Model, options),
+    create: require('./create')(Model, options),
+    read: require('./read')(Model, options),
+    update: require('./update')(Model, options),
+    del: require('./delete')(Model, options)
+  };
+};

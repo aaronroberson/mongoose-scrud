@@ -1,16 +1,16 @@
-module.exports = (function(Model, options) {
+module.exports = function(Model, options) {
   'use strict';
 
   function create(payload, cb) {
 
-    this.create(payload, function(err, doc) {
+    Model.create(payload, function(err, doc) {
       if (err) {
         return cb(err)
       }
 
       // Populate relationships.
       if (options.relate) {
-        var relationships = require('relationships')(Model);
+        var relationships = require('relationships.js')(Model);
 
         // TODO: Finish relationships before sending response.
         relationships.forEach(function(relation) {
@@ -45,5 +45,4 @@ module.exports = (function(Model, options) {
   return {
     create: create
   }
-
-})(Model, options);
+};

@@ -1,4 +1,4 @@
-module.exports = (function(Model, options) {
+module.exports = function(Model, options) {
   'use strict';
 
   var _ = require('lodash');
@@ -7,7 +7,7 @@ module.exports = (function(Model, options) {
     var updatedItem;
 
     // Lookup the item
-    this.findById(id, function(err, item) {
+    Model.findById(id, function(err, item) {
       if (err) {
         cb(err);
       }
@@ -35,5 +35,4 @@ module.exports = (function(Model, options) {
   return {
     update: update
   };
-
-})(Model, options);
+};

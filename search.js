@@ -1,4 +1,4 @@
-module.exports = (function(Model, options) {
+module.exports = function(Model, options) {
   'use strict';
 
   var _ = require('lodash');
@@ -96,8 +96,8 @@ module.exports = (function(Model, options) {
     // Support for searching all fields in a collection
     if (params.where) {
       fields.$where = function() {
-        for (var key in this) {
-          if (this[key] === params.where) {
+        for (var key in Model) {
+          if (Model[key] === params.where) {
             return true;
           }
           return false;
@@ -153,5 +153,4 @@ module.exports = (function(Model, options) {
   return {
     search: search
   }
-
-})(Model, options);
+};

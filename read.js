@@ -1,4 +1,4 @@
-module.exports = (function(Model, options) {
+module.exports = function(Model, options) {
   'use strict';
 
   function read(id, queryParams, cb) {
@@ -30,5 +30,4 @@ module.exports = (function(Model, options) {
   return {
     read: read
   };
-
-})(Model, options);
+};
