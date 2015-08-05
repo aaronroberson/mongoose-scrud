@@ -1,0 +1,29 @@
+{
+  "name": "mongoose-scrud",
+  "version": "0.1.0",
+  "description": "Convenience wrapper for performing SCRUD operations using the Mongoose ODM",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaronroberson/mongoose-scrud.git"
+  },
+  "keywords": [
+    "mongoose",
+    "scrud",
+    "rest",
+    "api"
+  ],
+  "author": "Aaron Roberson (aaronaroberson@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aaronroberson/mongoose-scrud/issues"
+  },
+  "homepage": "https://github.com/aaronroberson/mongoose-scrud#readme",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "mongoose": "^4.1.1"
+  }
+}

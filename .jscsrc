@@ -1,0 +1,9 @@
+{
+  "preset": "node-style-guide",
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "maximumLineLength": 300,
+  "disallowTrailingWhitespace": null,
+  "excludeFiles": ["node_modules/**"],
+  "validateIndentation": 2,
+  "requireTrailingComma": null
+}
