@@ -1,6 +1,6 @@
 {
   "name": "mongoose-scrud",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Convenience wrapper for performing SCRUD operations using the Mongoose ODM",
   "main": "index.js",
   "scripts": {
