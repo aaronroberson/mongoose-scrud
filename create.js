@@ -42,7 +42,5 @@ module.exports = function(Model, options) {
     });
   }
 
-  return {
-    create: create
-  }
+  return create;
 };

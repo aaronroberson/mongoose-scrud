@@ -54,7 +54,5 @@ module.exports = function(Model, options) {
     }
   }
 
-  return {
-    del: del
-  };
+  return del;
 };

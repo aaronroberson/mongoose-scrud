@@ -150,7 +150,5 @@ module.exports = function(Model, options) {
     }
   }
 
-  return {
-    search: search
-  }
+  return search;
 };

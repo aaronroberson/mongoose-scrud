@@ -32,7 +32,5 @@ module.exports = function(Model, options) {
     });
   }
 
-  return {
-    update: update
-  };
+  return update;
 };

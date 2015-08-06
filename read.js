@@ -27,7 +27,5 @@ module.exports = function(Model, options) {
     }
   }
 
-  return {
-    read: read
-  };
+  return read;
 };
