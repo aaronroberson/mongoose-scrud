@@ -1,10 +1,8 @@
 # Mongoose SCRUD
 
-Node.js Express middleware that uses your Mongoose schema to generate SCRUD API routes compatible with AngularJS and ngResource.
+Simple plugin for [Mongoose](https://github.com/LearnBoost/mongoose) which adds SCRUD methods to your schema models. Also compatible with AngularJS and ngResource.
 
-## Implementation
-
-Before you begin, be sure [MongoDB is installed](http://docs.mongodb.org/manual/installation/) and `mongod` is running.
+## Installation
 
 Install mongoose-scrud as a dependency and add it to your `package.json` file.
 
@@ -12,10 +10,15 @@ Install mongoose-scrud as a dependency and add it to your `package.json` file.
 npm install mongoose-scrud --save
 ```
 
+## Usage
+
+Before you begin, be sure [MongoDB is installed](http://docs.mongodb.org/manual/installation/) and `mongod` is running.
+
 First, define your Mongoose models and any necessary validations and indexes.
 
 ```
 // models.js
+var scrud = require('mongoose-scrud');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -24,28 +27,25 @@ var userSchema = new Schema({
 	email: { type: String, required: true },
 	password: { type: String, required: true }
 });
-mongoose.model('User', userSchema);
 
-var postSchema = new Schema({
-	title: { type: String, required: true },
-	contents: { type: String, required: true },
-	author: { type: Schema.Types.ObjectId, ref: 'User', index: true }
+```
+
+Then register the plugin on your schema:
+
+```
+userSchema.plugin(scrud);
+
+```
+
+Now your model will have `search`, `create`, `read`, `update`, and `del` methods:
+
+```
+var User = mongoose.model('User');
+
+User.search(req.query, function(error, results) {
+  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
 });
-mongoose.model('Post', postSchema);
 ```
-
-## Options
-
-Mongoose SCRUD expects the Model object and options to be passed in on require of the module as seen below:
-
-```
-var scrud = require('mongoose-scrud')(Model, {
-	relate: true
-});
-```
-
-### relate
-Experimental feature that automatically populates references on create and removes them on delete. Default: `false`
 
 ## Usage
 
@@ -54,7 +54,7 @@ For each model, five endpoints are created that handle resource search, create, 
 ### Search
 ```
 function(req, res, next) {
-	scud.search(req.query, function(error, results) {
+	User.search(req.query, function(error, results) {
 	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
 	});
 }
@@ -99,18 +99,23 @@ Posts.query({
 ### Create
 ```
 function(req, res, next) {
-	scud.create(req.body, function(error, results) {
+	scud.create(req.body, {relate: true}, function(error, results) {
 	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
 	});
 }
 ```
 Posting (or putting, if enabled) to the create route validates the incoming data and creates a new resource in the collection. Upon validation failure, a `400` error with details will be returned to the client. On success, a status code of `201` will be issued and the new resource will be returned.
 
+### Options
+
+#### relate
+Experimental feature that automatically populates references on create. Default: `false`.
+
 ### Read
 ```
 function(req, res, next) {
-	scud.read(id, req.query, function(error, results) {
-	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
+	User.read(id, req.query, function(error, results) {
+	  error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
 	});
 }
 ```
@@ -119,8 +124,8 @@ The read path returns a single resource object in the collection that matches a 
 ### Update
 ```
 function(req, res, next) {
-	scud.update(id, req.body, function(error, results) {
-	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
+	User.update(id, req.body, function(error, results) {
+	  error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
 	});
 }
 ```
@@ -129,33 +134,37 @@ Posting (or putting, if enabled) to the update route will validate the incoming 
 ### Delete
 ```
 function(req, res, next) {
-	scud.del(id, function(error, results) {
-	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
+	User.del(id, {relate: true}, function(error, results) {
+	  error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
 	});
 }
 ```
 Issuing a delete request to this route will result in the deletion of the resource and a `204` response if successful. If there was no resource, a `404` will be returned.
 
+### Options
+
+#### relate
+Experimental feature that automatically remove references on delete. Default: `false`.
+
 ## Sub-documents
 ```
-function index(request, response) {
-  request.query = request.query || {};
+function index(req, res) {
+  req.query = req.query || {};
 
   // Support for nested resources such as
   // GET /portal/accounts/:id/transactions
   if (request.params.id || request.accountId) {
-    request.query.account = request.params.id || request.accountId;
+    req.query.account = req.params.id || req.accountId;
   }
 
   // Default sort to descending order on createdAt
-  request.query.__sort = request.query.__sort || '-createdAt';
+  req.query.__sort = req.query.__sort || '-createdAt';
 
-  scrud.search(request.query, function(error, results) {
-    error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
+  User.search(req.query, function(error, results) {
+    error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
   });
 }
 ```
-
 
 ## Validation Hooks
 
@@ -212,15 +221,61 @@ Mongoose SCRUD will return a `400` with the error object passed by your middlewa
 }
 ```
 
-## Credits
-
-This package is adapted from [meanify](https://github.com/artzstudio/meanify) and is made for use in non-express applications. As such, Express is not a dependency. Please note, this library does not generate endpoints.
-
 ## Roadmap
 
 * Examples and documentation on integration.
 
 ## Changelog
 
+### 0.2.0 | 10/28/2014
+* Beta release:
+FEATURE: Add Regex support to `search()` method for `LIKE` queries
+BREAKING CHANGE: Updated as a Mongoose plugin.
+
+The old way of using this module was:
+
+```
+var scrud = require('mongoose-scrud')(Model, {
+    relate: true
+});
+
+scrud.search();
+
+```
+
+The new way of using this module is to register it as a plugin:
+```
+var scrud = require('mongoose-scrud');
+userSchema.plugin(scrud);
+User.search();
+```
+
 ### 0.1.0 | 10/28/2014
 * Alpha release ready for publish to npm and testing.
+
+## License 
+
+(The MIT License)
+
+Copyright (c) 2015 Aaron Roberson &lt;aaronaroberson@gmail.com&gt;
+
+Based on from [meanify](https://github.com/artzstudio/meanify).
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

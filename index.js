@@ -1,17 +1,15 @@
-module.exports = function(Model, options) {
-  'use strict';
+/*!
+ * Mongoose SCRUD Plugin
+ * Copyright(c) 2015 Aaron Roberson <aaronroberson@gmail.com>
+ * MIT Licensed
+ */
 
-  var mongoose = require('mongoose');
+function scrud(schema) {
+  schema.statics.search = require('./bin/search');
+  schema.statics.create = require('./bin/create');
+  schema.statics.read = require('./bin/read');
+  schema.statics.update = require('./bin/update');
+  schema.statics.del = require('./bin/delete');
+}
 
-  if (typeof Model === 'string') {
-    Model = mongoose.model(Model);
-  }
-
-  return {
-    search: require('./search')(Model, options),
-    create: require('./create')(Model, options),
-    read: require('./read')(Model, options),
-    update: require('./update')(Model, options),
-    del: require('./delete')(Model, options)
-  };
-};
+module.exports = scrud;

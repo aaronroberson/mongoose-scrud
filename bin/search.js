@@ -1,4 +1,4 @@
-module.exports = function(Model, options) {
+function search(Model) {
   'use strict';
 
   var _ = require('lodash');
@@ -21,17 +21,25 @@ module.exports = function(Model, options) {
     });
   }
 
+  function isNumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
+  function isBoolean(value) {
+    return (value == 'true' || value == 'false' || value == 0 || value == 1);
+  }
+
   function search(queryParams, cb) {
     var query;
     var params = {};
     var fields = queryParams || {};
 
     // Normalize count parameter.
-    if (fields.hasOwnProperty('__count')) {
+    if (_.has(fields, '__count')) {
       fields.__count = true;
     }
 
-    _.each(['count', 'populate', 'sort', 'skip', 'limit', 'near', 'where'], function(param) {
+    _.each(['count', 'populate', 'sort', 'skip', 'limit', 'near', 'where', 'operator'], function(param) {
 
       // Assign special query strings to params
       params[param] = fields['__' + param];
@@ -57,7 +65,7 @@ module.exports = function(Model, options) {
       }
 
       // Sanitize coordinates
-      var coordinates = params.near.split(',').map(function (item) {
+      var coordinates = params.near.split(',').map(function(item) {
         return parseFloat(item);
       });
 
@@ -82,45 +90,56 @@ module.exports = function(Model, options) {
       // Check if value is an object
       if (/^{.*}$/.test(value)) {
 
-        // Support JSON objects for range queries, etc.
-        fields[field] = JSON.parse(value);
+        try {
+
+          // Support JSON objects for range queries, etc.
+          fields[field] = JSON.parse(value);
+
+        } catch (e) {
+
+          cb(e);
+        }
 
         // Check if value is not an ObjectId
-      } else if (!/^[0-9a-fA-F]{24}$/.test(value)) {
+      } else if (!isNumber(value) && !isBoolean(value) && !/^[0-9a-fA-F]{24}$/.test(value)) {
 
         // Support Regex for LIKE queries
         fields[field] = {$regex: new RegExp(value, 'i')};
       }
     });
 
-    // Support for searching all fields in a collection
-    if (params.where) {
-      fields.$where = function() {
-        for (var key in Model) {
-          if (Model[key] === params.where) {
-            return true;
-          }
-          return false;
+    if (params.operator) {
+
+      // Check if value is an object
+      if (/^{.*}$/.test(params.operator)) {
+
+        try {
+
+          // Support JSON objects for range queries, etc.
+          params.operator = JSON.parse(params.operator);
+
+        } catch (e) {
+
+          cb(e);
         }
-      };
+      }
+
+      _.merge(fields, params.operator);
+
+      delete params.operator;
     }
 
     query = Model.find(fields);
 
     if (params.count) {
-
-      // Return count
       query.count(fields)
         .exec()
         .then(function(count) {
-          return cb(null, [count]);
+          cb(null, [count]);
         }, function(error) {
-          return cb(error);
+          cb(error);
         });
-
     } else {
-
-      // Build query
       if (params.limit) {
         query.limit(params.limit);
       }
@@ -133,22 +152,26 @@ module.exports = function(Model, options) {
       if (params.populate) {
         query.populate(params.populate);
       }
-
-      // Execute query
+      if (params.where) {
+        query.$where = _.bind(function(where) {
+          for (var key in obj) {
+            if (where && where === obj[key]) {
+              return true;
+            }
+          }
+        }, query, params.where);
+      }
       query
         .exec()
-        .then(function(docs) {
-
-          // Return query results
-          return cb(null, {count: docs.length, results: docs});
-
+        .then(function(items) {
+          cb(null, {count: items.length, results: items});
         }, function(error) {
-
-          // Return error
-          return cb(error);
+          cb(error);
         });
     }
   }
 
   return search;
-};
+}
+
+module.exports = search;

@@ -1,7 +1,7 @@
 {
   "name": "mongoose-scrud",
-  "version": "0.1.2",
-  "description": "Convenience wrapper for performing SCRUD operations using the Mongoose ODM",
+  "version": "0.2.0",
+  "description": "Mongoose plugin which adds SCRUD methods to your schema models using the Mongoose ODM",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/aaronroberson/mongoose-scrud#readme",
   "dependencies": {
-    "lodash": "^3.10.1",
-    "mongoose": "^4.1.1"
+    "lodash": "^3.10.1"
   }
 }

@@ -1,4 +1,4 @@
-module.exports = function(Model) {
+function relationships(Model) {
 
   var relationships = [];
   var modelName = Model.modelName;
@@ -32,7 +32,6 @@ module.exports = function(Model) {
         }
 
         if (relatedSchema.ref === modelName) {
-          // debug('Found related property: ', y);
           relationships.push({
             isArray: isArray,
             Model: Model,
@@ -46,4 +45,6 @@ module.exports = function(Model) {
   }
 
   return relationships;
-};
+}
+
+module.exports = relationships;
