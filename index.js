@@ -4,12 +4,18 @@
  * MIT Licensed
  */
 
+var search = require('./bin/search');
+var create = require('./bin/create');
+var read = require('./bin/read');
+var update = require('./bin/update');
+var del = require('./bin/delete');
+
 function scrud(schema) {
-  schema.statics.search = require('./bin/search');
-  schema.statics.create = require('./bin/create');
-  schema.statics.read = require('./bin/read');
-  schema.statics.update = require('./bin/update');
-  schema.statics.del = require('./bin/delete');
+  schema.statics.search = search;
+  schema.statics.create = create;
+  schema.statics.read = read;
+  schema.statics.update = update;
+  schema.statics.del = del;
 }
 
 module.exports = scrud;
