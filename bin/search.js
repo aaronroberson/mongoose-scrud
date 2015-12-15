@@ -5,11 +5,12 @@ function search(queryParams, cb) {
   var query;
   var params = {};
   var fields = queryParams || {};
+  var self = this;
 
   // Find geospatial index for geo queries.
   // http://docs.mongodb.org/manual/reference/operator/query/nearSphere/
   // https://github.com/LearnBoost/mongoose/wiki/3.6-Release-Notes#geojson-support-mongodb--24
-  var indexes = this.schema._indexes;
+  var indexes = self.schema._indexes;
   var geoField;
 
   if (indexes) {
@@ -120,7 +121,7 @@ function search(queryParams, cb) {
     delete params.operator;
   }
 
-  query = this.find(fields);
+  query = self.find(fields);
 
   if (params.count) {
     query.count(fields)

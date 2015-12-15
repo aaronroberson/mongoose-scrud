@@ -227,7 +227,15 @@ Mongoose SCRUD will return a `400` with the error object passed by your middlewa
 
 ## Changelog
 
-### 0.2.0 | 10/28/2014
+### 0.2.2 | 10/15/2015
+
+FIX: `this` management.
+
+### 0.2.1 | 10/15/2015
+
+FIX: fix model references in search.
+
+### 0.2.0 | 10/11/2014
 * Beta release:
 FEATURE: Add Regex support to `search()` method for `LIKE` queries
 BREAKING CHANGE: Updated as a Mongoose plugin.

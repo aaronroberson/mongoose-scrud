@@ -1,6 +1,8 @@
 function create(payload, options, cb) {
   'use strict';
 
+  var self = this;
+
   if (arguments.length < 3) {
     if (typeof options === 'function') {
       cb = options;
@@ -8,14 +10,14 @@ function create(payload, options, cb) {
     }
   }
 
-  this.create(payload, function(err, doc) {
+  self.create(payload, function(err, doc) {
     if (err) {
       return cb(err)
     }
 
     // Populate relationships.
     if (options.relate) {
-      var relationships = require('relationships.js')(this);
+      var relationships = require('relationships.js')(self);
 
       // TODO: Finish relationships before sending response.
       relationships.forEach(function(relation) {

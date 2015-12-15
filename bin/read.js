@@ -2,6 +2,7 @@ function read(id, params, cb) {
   'use strict';
 
   var populate = '';
+  var self = this;
 
   if (arguments.length < 3) {
     if (typeof params === 'function') {
@@ -17,7 +18,7 @@ function read(id, params, cb) {
 
   if (id) {
     // Lookup document
-    this.findById(id)
+    self.findById(id)
       .populate(populate)
       .exec(function(err, doc) {
         if (err) {

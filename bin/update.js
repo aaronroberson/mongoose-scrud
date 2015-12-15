@@ -2,6 +2,7 @@ function update(id, payload, cb) {
   'use strict';
 
   var _ = require('lodash');
+  var self = this;
 
   var updatedItem;
 
@@ -13,7 +14,7 @@ function update(id, payload, cb) {
   }
 
   // Lookup the item
-  this.findById(id, function(err, item) {
+  self.findById(id, function(err, item) {
     if (err) {
       cb(err);
     }

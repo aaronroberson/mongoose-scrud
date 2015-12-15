@@ -2,6 +2,7 @@ function del(id, options, cb) {
   'use strict';
 
   var _ = require('lodash');
+  var self = this;
 
   if (arguments.length < 3) {
     if (typeof options === 'function') {
@@ -12,7 +13,7 @@ function del(id, options, cb) {
 
   if (id) {
 
-    this.findByIdAndRemove(id, function(err, doc) {
+    self.findByIdAndRemove(id, function(err, doc) {
       if (err) {
         return cb(err);
       }
@@ -27,7 +28,7 @@ function del(id, options, cb) {
 
       // Remove relationships.
       if (options.relate && doc) {
-        var relationships = require('relationships.js')(this);
+        var relationships = require('relationships.js')(self);
 
         // TODO: Finish deleting relationships before sending response.
         relationships.forEach(function(relation) {
