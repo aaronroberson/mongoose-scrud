@@ -3,8 +3,6 @@
   "version": "0.2.1",
   "description": "Mongoose plugin which adds SCRUD methods to your schema models using the Mongoose ODM",
   "main": "index.js",
-  "scripts": {
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaronroberson/mongoose-scrud.git"
