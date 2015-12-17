@@ -12,7 +12,7 @@ function create(payload, options, cb) {
 
   self.create(payload, function(err, doc) {
     if (err) {
-      return cb(err)
+      return cb(err);
     }
 
     // Populate relationships.
@@ -23,15 +23,16 @@ function create(payload, options, cb) {
       relationships.forEach(function(relation) {
 
         var referenceId = doc[relation.property];
+
         // Normalize to array.
         if (!Array.isArray(referenceId)) {
-          referenceId = [ referenceId ];
+          referenceId = [referenceId];
         }
 
         referenceId.forEach(function(id) {
           var update = {};
           update[relation.relatedProperty] = doc._id;
-          relation.relatedModel.findByIdAndUpdate(id, relation.isArray ? { $addToSet: update } : update, function(err, data) {
+          relation.relatedModel.findByIdAndUpdate(id, relation.isArray ? { $addToSet: update } : update, function(err) {
               if (err) {
                 return cb(err);
               }
@@ -43,7 +44,7 @@ function create(payload, options, cb) {
     }
 
     // Return document
-    return cb(null, doc)
+    return cb(null, doc);
   });
 }
 

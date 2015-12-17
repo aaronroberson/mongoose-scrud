@@ -124,26 +124,31 @@ function search(queryParams, cb) {
   query = self.find(fields);
 
   if (params.count) {
+
     query.count(fields)
       .exec()
       .then(function(count) {
         cb(null, [count]);
-      }, function(error) {
-        cb(error);
-      });
+      }, cb.bind(cb));
+
   } else {
+
     if (params.limit) {
-      query.limit(params.limit);
+      query.limit(parseInt(params.limit));
     }
+
     if (params.skip) {
       query.skip(params.skip);
     }
+
     if (params.sort) {
       query.sort(params.sort);
     }
+
     if (params.populate) {
       query.populate(params.populate);
     }
+
     if (params.where) {
       query.$where = _.bind(function(where) {
         for (var key in obj) {
@@ -153,13 +158,12 @@ function search(queryParams, cb) {
         }
       }, query, params.where);
     }
+
     query
       .exec()
       .then(function(items) {
         cb(null, {count: items.length, results: items});
-      }, function(error) {
-        cb(error);
-      });
+      }, cb.bind(cb));
   }
 
   function isNumber(n) {

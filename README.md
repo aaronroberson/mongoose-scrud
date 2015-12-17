@@ -227,6 +227,10 @@ Mongoose SCRUD will return a `400` with the error object passed by your middlewa
 
 ## Changelog
 
+### 0.2.3 | 10/17/2015
+
+FIX: Coerce limit to number in search
+
 ### 0.2.2 | 10/15/2015
 
 FIX: `this` management.

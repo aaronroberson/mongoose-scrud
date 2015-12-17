@@ -28,12 +28,14 @@ function del(id, options, cb) {
 
       // Remove relationships.
       if (options.relate && doc) {
+
         var relationships = require('relationships.js')(self);
 
         // TODO: Finish deleting relationships before sending response.
         relationships.forEach(function(relation) {
 
           var referenceId = doc[relation.property];
+
           // Normalize to array.
           if (!Array.isArray(referenceId)) {
             referenceId = [referenceId];
