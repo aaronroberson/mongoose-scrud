@@ -10,17 +10,18 @@ Install mongoose-scrud as a dependency and add it to your `package.json` file.
 npm install mongoose-scrud --save
 ```
 
-## Usage
+## Instructions
 
-Before you begin, be sure [MongoDB is installed](http://docs.mongodb.org/manual/installation/) and `mongod` is running.
+First, define your Mongoose models and any necessary validations, methods and indexes. Require the mongoose-scrud package and then register the plugin on your schema.
 
-First, define your Mongoose models and any necessary validations and indexes.
+Example
 
 ```
-// models.js
-var scrud = require('mongoose-scrud');
+// user.js
+
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var scrud = require('mongoose-scrud');
 
 var userSchema = new Schema({
 	name: { type: String, required: true },
@@ -28,56 +29,69 @@ var userSchema = new Schema({
 	password: { type: String, required: true }
 });
 
-```
 
-Then register the plugin on your schema:
-
-```
 userSchema.plugin(scrud);
 
-```
-
-Now your model will have `search`, `create`, `read`, `update`, and `del` methods:
+mongoose.model('User', userSchema);
 
 ```
+
+Now your model will have `$search`, `$create`, `$read`, `$update`, and `$destroy` methods. You can use these methods however you would use any static method in Mongoose. However, they are especially helpful for use when performing CRUD operations, such with a RESTful API:
+
+
+```
+// router.js
+
+server.get({path: '/accounts', version: '2.0.0', users.search);
+
+// users.js
+
+var mongoose = require('mongoose');
 var User = mongoose.model('User');
 
-User.search(req.query, function(error, results) {
-  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
-});
+// Function registered on RESTful endpoint
+function search(req, res, done) {
+  User.search(req.query, function(error, results) {
+    error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
+  });
+}
+
+exports.search = search;
 ```
 
-## Usage
+_Note_ If you're using Express, you may be interested in meanify](https://github.com/artzstudio/meanify) which can generate the routes for you. This package was inspired by meanify but created to work outside of the context of Express, such as Restify.
 
-For each model, five endpoints are created that handle resource search, create, read, update and delete (SCRUD) functions.
 
-### Search
+## Model.$search([options], callback)
+
+The `$search` method returns an array of resources that match the fields and values provided in the options object. If no options are provided, the search will return up to 500 documents. An empty array (`[]`) will be returned if no documents are found.
+
+Option     | Description
+---------- | -------------
+__limit    | `Numeric`. Limits the result set count to the supplied value. Default: `500`.
+__skip     | `offset`. Number of records to skip.
+__aggregate| `String`. Performs [aggregation](http://docs.mongodb.org/manual/applications/aggregation/) on the models collection.
+__distinct | `String`. Finds the distinct values for a specified field across the current collection.
+__sort     | `String`. Sorts the record according to provided [shorthand sort syntax](http://mongoosejs.com/docs/api.html#query_Query-sort) (e.g. `&__sort=-name`).
+__populate | `String`. Populates object references with the full resource (e.g. `&__populate=users`).
+__count    | `Numberic`. When present, returns the resulting count in an array (e.g. `[38]`).
+__near     | `String`. Performs a geospatial query on given coordinates and an optional range (in meters), sorted by distance by default. Required format: `{longitude},{latitude},{range}`
+
+
+#### REST Example
+
+Options can be passed in as query parameters in the format of `&__{option}={value}` to unlock the power of MongoDB's `find()` API.
+
 ```
-function(req, res, next) {
+GET /api/users?id=544bbbceecd047be03d0e0f7&__limit=1
+
+
+function search(req, res, done) {
 	User.search(req.query, function(error, results) {
 	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
 	});
 }
 ```
-The search route returns an array of resources that match the fields and values provided in the query parameters.
-
-For example:
-
-```
-GET /api/posts?author=544bbbceecd047be03d0e0f7&__limit=1
-```
-If no query parameters are present, it returns the entire data set.  No results will be an empty array (`[]`).
-
-Options are passed in as query parameters in the format of `&__{option}={value}` in the query string, and unlock the power of MongoDB's `find()` API.
-
-Option   | Description
--------- | -------------
-limit    | Limits the result set count to the supplied value.
-skip     | Number of records to skip (offset).
-sort     | Sorts the record according to provided [shorthand sort syntax](http://mongoosejs.com/docs/api.html#query_Query-sort) (e.g. `&__sort=-name`).
-populate | Populates object references with the full resource (e.g. `&__populate=users`).
-count    | When present, returns the resulting count in an array (e.g. `[38]`).
-near     | Performs a geospatial query on given coordinates and an optional range (in meters), sorted by distance by default. Required format: `{longitude},{latitude},{range}`
 
 Mongoose SCRUD also supports range queries. To perform a range query, pass in a stringified JSON object into the field on the request.
 
@@ -85,6 +99,7 @@ Mongoose SCRUD also supports range queries. To perform a range query, pass in a 
 GET /api/posts?createdAt={"$gt":"2013-01-01T00:00:00.000Z"}
 ```
 
+#### Angular example
 Using `ngResource` in AngularJS, performing a range query is easy:
 
 ```
@@ -96,22 +111,29 @@ Posts.query({
 });
 ```
 
-### Create
+### Model.$create(doc, [options], callback)
+
+The `$create` method saves a new document in the collection after it has been validated. This method returns the new document, or a Mongoose error.
+
+Option   | Description
+-------- | -------------
+strict   | `Boolean/String`. Ensures that property values not specified in the schema do not get saved to the db. Values: `true` (default), `false`, 'throw'.
+relate   | `Boolean`. Automatically populates references (Experimental). Default: `false`.
+
+Example: 
+
 ```
-function(req, res, next) {
-	scud.create(req.body, {relate: true}, function(error, results) {
+function create(req, res, done) {
+	Model.$create(req.body, , function(error, results) {
 	  error ? response.json(500, {code: 'MongoError', message: error}) : response.json(200, results);
 	});
 }
 ```
-Posting (or putting, if enabled) to the create route validates the incoming data and creates a new resource in the collection. Upon validation failure, a `400` error with details will be returned to the client. On success, a status code of `201` will be issued and the new resource will be returned.
 
-### Options
 
-#### relate
-Experimental feature that automatically populates references on create. Default: `false`.
+### Model.$read(id, [options], callback)
 
-### Read
+The `$read` method returns a single resource object in the collection that matches a given id. If the document does not an object with a 404 status and the message 'Resource not found' `{status: 404, message: 'Resource not found'}`.
 ```
 function(req, res, next) {
 	User.read(id, req.query, function(error, results) {
@@ -119,19 +141,16 @@ function(req, res, next) {
 	});
 }
 ```
-The read path returns a single resource object in the collection that matches a given id. If the resource does not exist, a `404` is returned.
 
-### Update
-```
-function(req, res, next) {
-	User.update(id, req.body, function(error, results) {
-	  error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
-	});
-}
-```
-Posting (or putting, if enabled) to the update route will validate the incoming data and update the existing resource in the collection and respond with `204` if successful. Upon validation failure, a `400` error with details will be returned to the client. A `404` will be returned if the resource did not exist.
+Option     | Description
+---------- | -------------
+__populate | `String`. Populates object references with the full resource (e.g. `&__populate=users`).
 
-### Delete
+
+### Model.$destroy(id, [options], callback)
+
+The `$destroy` method will delete a document from the collection and return an object with a status of 204 and the message 'Resource deleted' `{status: 204, message: 'Resource deleted'}`. If the delete failed an object will be returned with a stats of 404 and the message 'Resource not found' `{status: 404, message: 'Resource not found'}`.
+
 ```
 function(req, res, next) {
 	User.del(id, {relate: true}, function(error, results) {
@@ -139,12 +158,11 @@ function(req, res, next) {
 	});
 }
 ```
-Issuing a delete request to this route will result in the deletion of the resource and a `204` response if successful. If there was no resource, a `404` will be returned.
 
-### Options
 
-#### relate
-Experimental feature that automatically remove references on delete. Default: `false`.
+Option   | Description
+-------- | -------------
+relate   | `Boolean`. Automatically delete references (Experimental). Default: `false`.
 
 ## Sub-documents
 ```
@@ -199,7 +217,7 @@ Example response:
 }
 ```
 
-Advanced validation for the create and update routes may be achieved using the `pre` hook, for example:
+Advanced validation for the `$create` and `$update` methods may be achieved using the `pre` hook, for example:
 
 ```
 commentSchema.pre('save', function (next) {
@@ -212,7 +230,8 @@ commentSchema.pre('save', function (next) {
 	next();
 });
 ```
-Mongoose SCRUD will return a `400` with the error object passed by your middleware.
+
+Mongoose SCRUD will return an error object upon failure.
 
 ```
 {
@@ -223,9 +242,25 @@ Mongoose SCRUD will return a `400` with the error object passed by your middlewa
 
 ## Roadmap
 
-* Examples and documentation on integration.
+* Adding the `__where` option to search.
+* Solidifying the relate feature.
+* Updating package to use reactive programming
+* Converting source code to ES2015
 
 ## Changelog
+
+### 0.2.4 | 10/17/2015
+
+FEATURE: Add support for aggregation when using the `$search` method via the `_aggregate` option.
+FEATURE: Add support for distinct values for a specified field when using $search` via the `distinct` option.
+BREAKING CHANGE: Changed the method names and signatures of the SCRUD methods.
+
+Previous | New
+-------- | -------------
+search   | $search
+create   | $create
+read     | $read
+del      | $destroy
 
 ### 0.2.3 | 10/17/2015
 
@@ -241,7 +276,7 @@ FIX: fix model references in search.
 
 ### 0.2.0 | 10/11/2014
 * Beta release:
-FEATURE: Add Regex support to `search()` method for `LIKE` queries
+FEATURE: Add Regex support to `$search()` method for `LIKE` queries
 BREAKING CHANGE: Updated as a Mongoose plugin.
 
 The old way of using this module was:
@@ -271,7 +306,7 @@ User.search();
 
 Copyright (c) 2015 Aaron Roberson &lt;aaronaroberson@gmail.com&gt;
 
-Based on from [meanify](https://github.com/artzstudio/meanify).
+Based on [meanify](https://github.com/artzstudio/meanify).
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
