@@ -1,6 +1,6 @@
 {
   "name": "mongoose-scrud",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Mongoose plugin which adds SCRUD methods to your schema models using the Mongoose ODM",
   "main": "index.js",
   "repository": {

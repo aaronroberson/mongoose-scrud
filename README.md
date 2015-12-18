@@ -1,6 +1,6 @@
 # Mongoose SCRUD
 
-Simple plugin for [Mongoose](https://github.com/LearnBoost/mongoose) which adds SCRUD methods to your schema models. Also compatible with AngularJS and ngResource.
+Simple plugin for [Mongoose](https://github.com/LearnBoost/mongoose) which adds SCRUD methods to your schema models. Also compatible with [AngularJS](http://angularjs.org) and ngResource.
 
 ## Installation
 
@@ -59,7 +59,7 @@ function search(req, res, done) {
 exports.search = search;
 ```
 
-_Note_ If you're using Express, you may be interested in meanify](https://github.com/artzstudio/meanify) which can generate the routes for you. This package was inspired by meanify but created to work outside of the context of Express, such as Restify.
+_Note_ If you're using Express, you may be interested in [meanify](https://github.com/artzstudio/meanify) which can additionally generate routes for you. This package was inspired by meanify but created to work outside of the context of Express, such as Restify.
 
 
 ## Model.$search([options], callback)
@@ -69,14 +69,13 @@ The `$search` method returns an array of resources that match the fields and val
 Option     | Description
 ---------- | -------------
 __limit    | `Numeric`. Limits the result set count to the supplied value. Default: `500`.
-__skip     | `offset`. Number of records to skip.
+__skip     | `offset`. Number of records to skip. Cannot be used with `__distinct`.
 __aggregate| `String`. Performs [aggregation](http://docs.mongodb.org/manual/applications/aggregation/) on the models collection.
 __distinct | `String`. Finds the distinct values for a specified field across the current collection.
 __sort     | `String`. Sorts the record according to provided [shorthand sort syntax](http://mongoosejs.com/docs/api.html#query_Query-sort) (e.g. `&__sort=-name`).
 __populate | `String`. Populates object references with the full resource (e.g. `&__populate=users`).
-__count    | `Numberic`. When present, returns the resulting count in an array (e.g. `[38]`).
+__count    | `Numeric`. When present, returns the resulting count in an array (e.g. `[38]`).
 __near     | `String`. Performs a geospatial query on given coordinates and an optional range (in meters), sorted by distance by default. Required format: `{longitude},{latitude},{range}`
-
 
 #### REST Example
 
@@ -130,10 +129,12 @@ function create(req, res, done) {
 }
 ```
 
-
 ### Model.$read(id, [options], callback)
 
-The `$read` method returns a single resource object in the collection that matches a given id. If the document does not an object with a 404 status and the message 'Resource not found' `{status: 404, message: 'Resource not found'}`.
+The `$read` method returns a single resource object in the collection that matches a given id. If a matching document can't be found, returns an object with a 404 status and the message 'Resource not found' `{status: 404, message: 'Resource not found.'}`.
+
+Example: 
+
 ```
 function(req, res, next) {
 	User.read(id, req.query, function(error, results) {
@@ -146,10 +147,25 @@ Option     | Description
 ---------- | -------------
 __populate | `String`. Populates object references with the full resource (e.g. `&__populate=users`).
 
+### Model.$update(id, doc, callback)
+
+The `$update` method updates a single resource object in the collection that matches a given id. Returns the updated document. If a matching document can't found, returns an object with a 404 status and the message 'Resource not found' `{status: 404, message: 'Resource not found.'}`.
+
+Example: 
+
+```
+function(req, res, next) {
+	User.read(id, req.query, function(error, results) {
+	  error ? res.json(500, {code: 'MongoError', message: error}) : res.json(200, results);
+	});
+}
+```
 
 ### Model.$destroy(id, [options], callback)
 
-The `$destroy` method will delete a document from the collection and return an object with a status of 204 and the message 'Resource deleted' `{status: 204, message: 'Resource deleted'}`. If the delete failed an object will be returned with a stats of 404 and the message 'Resource not found' `{status: 404, message: 'Resource not found'}`.
+The `$destroy` method will delete a document from the collection and return an object with a status of 204 and the message 'Resource deleted' `{status: 204, message: 'Resource deleted'}`. If the delete failed an object will be returned with a stats of 404 and the message 'Resource not found' `{status: 404, message: 'Resource not found.'}`.
+
+Example: 
 
 ```
 function(req, res, next) {
@@ -158,7 +174,6 @@ function(req, res, next) {
 	});
 }
 ```
-
 
 Option   | Description
 -------- | -------------
@@ -242,17 +257,24 @@ Mongoose SCRUD will return an error object upon failure.
 
 ## Roadmap
 
+* Add unit tests
 * Adding the `__where` option to search.
 * Solidifying the relate feature.
 * Updating package to use reactive programming
 * Converting source code to ES2015
 
+_PRs encouraged!_
+
 ## Changelog
+
+### 0.2.5 | 10/18/2015
+
+BREAKING CHANGE: $update method signature has changed. First parameter is now an ID instead of an object.
 
 ### 0.2.4 | 10/17/2015
 
-FEATURE: Add support for aggregation when using the `$search` method via the `_aggregate` option.
-FEATURE: Add support for distinct values for a specified field when using $search` via the `distinct` option.
+FEATURE: Add support for aggregation when using the `$search` method via the `__aggregate` option.
+FEATURE: Add support for distinct values for a specified field when using $search` via the `__distinct` option.
 BREAKING CHANGE: Changed the method names and signatures of the SCRUD methods.
 
 Previous | New
