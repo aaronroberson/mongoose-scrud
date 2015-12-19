@@ -12,23 +12,24 @@ npm install mongoose-scrud --save
 
 ## Instructions
 
-First, define your Mongoose models and any necessary validations, methods and indexes. Require the mongoose-scrud package and then register the plugin on your schema.
+The mongoose-scrud plugin can be added individually to each schema or globally to all models.
 
-Example
+### Global
 
 ```
-// user.js
-
+// models.js
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var scrud = require('mongoose-scrud');
 
-var userSchema = new Schema({
+require('mongoose-scrud')(mongoose, {global: true});
+
+// user.js
+var mongoose = require('mongoose');
+
+var userSchema = mongoose.Schema({
 	name: { type: String, required: true },
 	email: { type: String, required: true },
 	password: { type: String, required: true }
 });
-
 
 userSchema.plugin(scrud);
 
@@ -36,16 +37,40 @@ mongoose.model('User', userSchema);
 
 ```
 
-Now your model will have `$search`, `$create`, `$read`, `$update`, and `$destroy` methods. You can use these methods however you would use any static method in Mongoose. However, they are especially helpful for use when performing CRUD operations, such with a RESTful API:
+_Note_ The plugin will not be applied to sub-documents. See [#1674](https://github.com/Automattic/mongoose/issues/1674).
 
+### Individually
+
+First, define your Mongoose models and any necessary validations, methods and indexes. Require the mongoose-scrud package and then register the plugin on your schema.
+
+Example:
+
+```
+// user.js
+var mongoose = require('mongoose');
+var scrud = require('mongoose-scrud');
+
+var userSchema = mongoose.Schema({
+	name: { type: String, required: true },
+	email: { type: String, required: true },
+	password: { type: String, required: true }
+});
+
+userSchema.plugin(scrud);
+
+mongoose.model('User', userSchema);
+
+```
+
+Now your model will have `$search`, `$create`, `$read`, `$update`, and `$destroy` methods. You can use these methods however you would use any static method in Mongoose. However, they are especially helpful for use when performing CRUD operations, such with a RESTful API.
+
+Example:
 
 ```
 // router.js
-
 server.get({path: '/accounts', version: '2.0.0', users.search);
 
 // users.js
-
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 
@@ -61,6 +86,13 @@ exports.search = search;
 
 _Note_ If you're using Express, you may be interested in [meanify](https://github.com/artzstudio/meanify) which can additionally generate routes for you. This package was inspired by meanify but created to work outside of the context of Express, such as Restify.
 
+##scrud([schema, mongoose], [options])
+
+The plugin for adding the SCRUD methods to each schema individually or to all modals globally.
+
+Option     | Description
+---------- | -------------
+global     | `Boolean`. Apply to all models. Must provide `Mongoose` as first parameter. 
 
 ## Model.$search([options], callback)
 
@@ -266,6 +298,10 @@ Mongoose SCRUD will return an error object upon failure.
 _PRs encouraged!_
 
 ## Changelog
+
+### 0.2.6 | 10/18/2015
+
+FEATURE: Add `global` option for globally adding methods to all schemas.
 
 ### 0.2.5 | 10/18/2015
 
