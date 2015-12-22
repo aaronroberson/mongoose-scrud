@@ -299,6 +299,10 @@ _PRs encouraged!_
 
 ## Changelog
 
+### 0.2.7 | 10/22/2015
+
+FIX: update global option and method invocation.
+
 ### 0.2.6 | 10/18/2015
 
 FEATURE: Add `global` option for globally adding methods to all schemas.
