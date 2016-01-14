@@ -15,7 +15,7 @@ function scrud(obj, options) {
   if (_.get(options, 'global') && _.has(obj, 'plugin')) {
 
     // Add the static methods to every schema
-    obj.plugin.call(scrud);
+    obj.plugin(scrud);
 
   } else {
 
