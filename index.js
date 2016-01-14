@@ -12,10 +12,19 @@ var destroy = require('./lib/destroy');
 
 function scrud(obj, options) {
 
+  // Do we have a mongoose object with a plugin method?
   if (_.get(options, 'global') && _.has(obj, 'plugin')) {
 
     // Add the static methods to every schema
-    obj.plugin(scrud);
+    obj.plugin(function(schema) {
+
+      // Add the methods
+      schema.statics.$search = search;
+      schema.statics.$create = create;
+      schema.statics.$read = read;
+      schema.statics.$update = update;
+      schema.statics.$destroy = destroy;
+    });
 
   } else {
 

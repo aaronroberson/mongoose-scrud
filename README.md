@@ -299,7 +299,7 @@ _PRs encouraged!_
 
 ## Changelog
 
-### 0.2.8 & 2.8.9 | 1/13/2016
+### 0.2.8-0.2.10 | 1/13/2016
 
 FIX: fix global feature
 
