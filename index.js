@@ -10,23 +10,21 @@ var read = require('./lib/read');
 var update = require('./lib/update');
 var destroy = require('./lib/destroy');
 
-function scrud(schema, options) {
+function scrud(obj, options) {
 
-  if (_.get(options, 'global')) {
-
-    mongoose = schema;
+  if (_.get(options, 'global') && _.has(obj, 'plugin')) {
 
     // Add the static methods to every schema
-    scrud.bind(mongoose.plugin);
+    obj.plugin.call(scrud);
 
   } else {
 
     // Add the methods to an individual schema
-    schema.statics.$search = search;
-    schema.statics.$create = create;
-    schema.statics.$read = read;
-    schema.statics.$update = update;
-    schema.statics.$destroy = destroy;
+    obj.statics.$search = search;
+    obj.statics.$create = create;
+    obj.statics.$read = read;
+    obj.statics.$update = update;
+    obj.statics.$destroy = destroy;
   }
 }
 
